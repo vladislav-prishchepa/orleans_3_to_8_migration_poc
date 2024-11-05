@@ -1,0 +1,27 @@
+﻿{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "mysql": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "hotReloadEnabled": false,
+      "applicationUrl": "http://localhost:5243",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "PersistenceSettings__DbKind": "mysql"
+      }
+    },
+    "postgres": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "hotReloadEnabled": false,
+      "applicationUrl": "http://localhost:5243",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "PersistenceSettings__DbKind": "postgres"
+      }
+    }
+  }
+}

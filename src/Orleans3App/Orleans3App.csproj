@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OrleansVersion>3.7.2</OrleansVersion>
+    <UserSecretsId>3782b111-a6b1-4b7f-a3fb-bcf9536fcfba</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Orleans.Persistence.AdoNet" Version="$(OrleansVersion)" />
+    <PackageReference Include="Microsoft.Orleans.OrleansRuntime" Version="$(OrleansVersion)" />
+    <PackageReference Include="Microsoft.Orleans.CodeGenerator.MSBuild" Version="$(OrleansVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="MySqlConnector" Version="2.3.7" />
+    <PackageReference Include="Npgsql" Version="8.0.5" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ContentWithTargetPath Include="migrations\mysql\*.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>migrations\mysql\%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="migrations\postgres\*.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>migrations\postgres\%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+
+</Project>
