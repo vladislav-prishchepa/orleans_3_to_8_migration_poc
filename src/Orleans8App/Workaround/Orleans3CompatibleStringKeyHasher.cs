@@ -23,10 +23,10 @@ internal class Orleans3CompatibleStringKeyHasher : IHasher
     /// </summary>
     public string Description { get; } = $"Orleans v3 hash function ({nameof(JenkinsHash)}).";
 
-        /// <summary>
-        /// <see cref="IHasher.Hash(byte[])"/>.
-        /// </summary>
-        public int Hash(byte[] data)
+    /// <summary>
+    /// <see cref="IHasher.Hash(byte[])"/>.
+    /// </summary>
+    public int Hash(byte[] data)
         {
             // Orleans v3 treats string-only keys as integer keys with extension (AdoGrainKey.IsLongKey == true),
             // so data must be extended for string-only grain keys.
@@ -43,28 +43,22 @@ internal class Orleans3CompatibleStringKeyHasher : IHasher
 
             var extendedLength = data.Length + 8;
 
-            var buffer = extendedLength switch
-            {
-                <= 32 => stackalloc byte[32],
-                <= 64 => stackalloc byte[64],
-                <= 128 => stackalloc byte[128],
-                <= 256 => stackalloc byte[256],
-                _ => Span<byte>.Empty
-            };
-
+            const int maxOnStack = 256;
             byte[]? rentedBuffer = null;
-            if (buffer.IsEmpty)
-            {
-                // assuming code below never throws, so calling ArrayPool.Return without try/finally block for JIT optimization
-                rentedBuffer = ArrayPool<byte>.Shared.Rent(extendedLength);
-                buffer = rentedBuffer;
-            }
+
+            // assuming code below never throws, so calling ArrayPool.Return without try/finally block for JIT optimization
+
+            var buffer = extendedLength > maxOnStack
+                ? (rentedBuffer = ArrayPool<byte>.Shared.Rent(extendedLength)).AsSpan()
+                : stackalloc byte[maxOnStack];
+
+            buffer = buffer[..extendedLength];
 
             data.AsSpan().CopyTo(buffer);
             // buffer may contain arbitrary data, setting zeros in 'extension' segment
-            buffer.Slice(data.Length, 8).Clear();
+            buffer[data.Length..].Clear();
 
-            var hash = _innerHasher.Hash(buffer[..extendedLength]);
+            var hash = _innerHasher.Hash(buffer);
 
             if (rentedBuffer is not null)
                 ArrayPool<byte>.Shared.Return(rentedBuffer);
@@ -82,22 +76,16 @@ internal class Orleans3CompatibleStringKeyHasher : IHasher
             if (grainTypeByteCount != data.Length)
                 return false;
 
-            var buffer = grainTypeByteCount switch
-            {
-                <= 32 => stackalloc byte[32],
-                <= 64 => stackalloc byte[64],
-                <= 128 => stackalloc byte[128],
-                <= 256 => stackalloc byte[256],
-                _ => Span<byte>.Empty
-            };
-
+            const int maxOnStack = 256;
             byte[]? rentedBuffer = null;
-            if (buffer.IsEmpty)
-            {
-                // assuming code below never throws, so calling ArrayPool.Return without try/finally block for JIT optimization
-                rentedBuffer = ArrayPool<byte>.Shared.Rent(grainTypeByteCount);
-                buffer = rentedBuffer;
-            }
+
+            // assuming code below never throws, so calling ArrayPool.Return without try/finally block for JIT optimization
+
+            var buffer = grainTypeByteCount > maxOnStack
+                ? (rentedBuffer = ArrayPool<byte>.Shared.Rent(grainTypeByteCount)).AsSpan()
+                : stackalloc byte[maxOnStack];
+
+            buffer = buffer[..grainTypeByteCount];
 
             var bytesWritten = Encoding.UTF8.GetBytes(_grainType, buffer);
             var isGrainType = buffer[..bytesWritten].SequenceEqual(data);
