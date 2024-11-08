@@ -24,12 +24,6 @@ namespace Orleans8App.Workaround
         }
 
         // This is the reference implementation of the Jenkins hash.
-        public static uint ComputeHash(byte[] data)
-        {
-            return ComputeHash(data.AsSpan());
-        }
-
-        // This is the reference implementation of the Jenkins hash.
         public static uint ComputeHash(ReadOnlySpan<byte> data)
         {
             int len = data.Length;
@@ -40,15 +34,15 @@ namespace Orleans8App.Workaround
 
             while (i + 12 <= len)
             {
-                a += data[i++] |
+                a += (uint)data[i++] |
                     ((uint)data[i++] << 8) |
                     ((uint)data[i++] << 16) |
                     ((uint)data[i++] << 24);
-                b += data[i++] |
+                b += (uint)data[i++] |
                     ((uint)data[i++] << 8) |
                     ((uint)data[i++] << 16) |
                     ((uint)data[i++] << 24);
-                c += data[i++] |
+                c += (uint)data[i++] |
                     ((uint)data[i++] << 8) |
                     ((uint)data[i++] << 16) |
                     ((uint)data[i++] << 24);
@@ -64,7 +58,7 @@ namespace Orleans8App.Workaround
             if (i < len)
                 a += (uint)data[i++] << 24;
             if (i < len)
-                b += data[i++];
+                b += (uint)data[i++];
             if (i < len)
                 b += (uint)data[i++] << 8;
             if (i < len)
@@ -77,37 +71,6 @@ namespace Orleans8App.Workaround
                 c += (uint)data[i++] << 16;
             if (i < len)
                 c += (uint)data[i++] << 24;
-            Mix(ref a, ref b, ref c);
-            return c;
-        }
-
-        public static uint ComputeHash(string data)
-        {
-            byte[] bytesToHash = Encoding.UTF8.GetBytes(data);
-            return ComputeHash(bytesToHash);
-        }
-
-        // This implementation calculates the exact same hash value as the above, but is
-        // optimized for the case where the input is exactly 24 bytes of data provided as
-        // three 8-byte unsigned integers.
-        public static uint ComputeHash(ulong u1, ulong u2, ulong u3)
-        {
-            uint a = 0x9e3779b9;
-            uint b = a;
-            uint c = 0;
-
-            unchecked
-            {
-                a += (uint)u1;
-                b += (uint)((u1 ^ (uint)u1) >> 32);
-                c += (uint)u2;
-                Mix(ref a, ref b, ref c);
-                a += (uint)((u2 ^ (uint)u2) >> 32);
-                b += (uint)u3;
-                c += (uint)((u3 ^ (uint)u3) >> 32);
-            }
-            Mix(ref a, ref b, ref c);
-            c += 24;
             Mix(ref a, ref b, ref c);
             return c;
         }

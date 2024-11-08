@@ -1,7 +1,6 @@
 using Newtonsoft.Json;
 using Orleans.Configuration;
 using Orleans.Serialization;
-using Orleans.Storage;
 using Orleans8App;
 using Orleans8App.Grains;
 using Orleans8App.Workaround;
